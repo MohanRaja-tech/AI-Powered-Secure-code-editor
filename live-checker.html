@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Vulnerability Checker - Secure Code AI</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CodeMirror for code editor -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/lint/lint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
+    
+    <!-- Highlight.js for code highlighting in the suggestions pane -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
+    <style>
+        /* Live Checker specific styles */
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .CodeMirror {
+            height: calc(100vh - 170px);
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+        }
+        
+        /* Enhanced syntax highlighting */
+        .cm-s-monokai .cm-keyword {color: #66d9ef; font-weight: bold;}
+        .cm-s-monokai .cm-operator {color: #ff79c6;}
+        .cm-s-monokai .cm-number {color: #bd93f9;}
+        .cm-s-monokai .cm-string {color: #f1fa8c;}
+        .cm-s-monokai .cm-comment {color: #6272a4;}
+        .cm-s-monokai .cm-tag {color: #ff79c6; font-weight: bold;}
+        .cm-s-monokai .cm-attribute {color: #50fa7b;}
+        .cm-s-monokai .cm-type {color: #8be9fd; font-weight: bold;}
+        .cm-s-monokai .cm-variable {color: #f8f8f2;}
+        .cm-s-monokai .cm-variable-2 {color: #bd93f9;}
+        .cm-s-monokai .cm-variable-3 {color: #ff79c6;}
+        .cm-s-monokai .cm-def {color: #50fa7b;}
+        .cm-s-monokai .cm-property {color: #66d9ef;}
+        .cm-s-monokai .cm-qualifier {color: #50fa7b;}
+        .cm-s-monokai .cm-bracket {color: #f8f8f2;}
+        .cm-s-monokai .cm-punctuation {color: #f8f8f2;}
+        .cm-s-monokai .cm-meta {color: #ffb86c;}
+        
+        .code-controls {
+            padding: 10px;
+            background-color: var(--bg-dark);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .language-selector select {
+            background-color: var(--bg-darker);
+            color: var(--text-light);
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            min-width: 120px; /* Ensure text is always visible */
+            appearance: auto; /* Use browser default styling for better visibility */
+            font-weight: bold; /* Make text always bold */
+        }
+        
+        .language-selector option {
+            font-weight: bold; /* Make option text bold too */
+            padding: 5px;
+            background-color: var(--bg-darker);
+            color: var(--text-light); /* Ensure option text is always visible */
+        }
+        
+        .template-button {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 5px;
+        }
+        
+        .template-button:hover {
+            background-color: var(--accent-purple);
+        }
+        
+        .secure-button {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .secure-button:hover {
+            background-color: var(--accent-green-hover);
+        }
+        
+        .status-bar {
+            padding: 8px 15px;
+            font-size: 12px;
+            background-color: var(--bg-darker);
+            border-top: 1px solid var(--border-color);
+            color: var(--text-light);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .vulnerability-count {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+        
+        .vulnerability-count.secure {
+            color: var(--accent-green);
+        }
+        
+        .feedback-container {
+            width: 400px;
+            background-color: var(--bg-dark);
+            overflow-y: auto;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .feedback-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-darker);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .feedback-header h2 {
+            margin: 0;
+            color: var(--accent-blue);
+            font-size: 18px;
+        }
+        
+        .vulnerability-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 15px;
+        }
+        
+        .vulnerability-item {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: var(--bg-darker);
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-red);
+        }
+        
+        .vulnerability-item.warning {
+            border-left-color: var(--accent-orange);
+        }
+        
+        .vulnerability-item.info {
+            border-left-color: var(--accent-blue);
+        }
+        
+        .vulnerability-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--accent-red);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .vulnerability-item.warning .vulnerability-title {
+            color: var(--accent-orange);
+        }
+        
+        .vulnerability-item.info .vulnerability-title {
+            color: var(--accent-blue);
+        }
+        
+        .vulnerability-line {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+        
+        .vulnerability-description {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .vulnerability-fix {
+            margin-top: 10px;
+            background-color: var(--bg-darkest);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            color: var(--accent-green);
+        }
+        
+        .apply-fix-button {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .apply-fix-button:hover {
+            background-color: var(--accent-blue-hover);
+        }
+        
+        /* CodeMirror vulnerability markers */
+        .cm-vulnerability-marker {
+            background-color: rgba(255, 0, 0, 0.2);
+            border-bottom: 2px wavy var(--accent-red);
+            position: relative;
+        }
+        
+        .cm-vulnerability-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            background-color: var(--bg-darkest);
+            border: 1px solid var(--accent-red);
+            border-radius: 4px;
+            padding: 5px 10px;
+            color: white;
+            font-size: 12px;
+            z-index: 100;
+            white-space: nowrap;
+        }
+        
+        .cm-vulnerability-marker:hover .cm-vulnerability-tooltip {
+            display: block;
+        }
+        
+        /* Line gutter markers */
+        .CodeMirror-gutter-vulnerability {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--accent-red);
+            margin-left: 5px;
+            margin-top: 4px;
+        }
+        
+        /* Navigation bar */
+        .navbar {
+            background-color: var(--bg-darkest);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-light);
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .logo i {
+            color: var(--accent-blue);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--bg-dark);
+        }
+        
+        .nav-link.active {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+        
+        .github-button {
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 10px;
+        }
+        
+        .github-button:hover {
+            background-color: #555;
+        }
+        
+        .run-button {
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 10px;
+        }
+        
+        .run-button:hover {
+            background-color: #1565c0;
+        }
+        
+        .controls-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Output area */
+        .output-container {
+            display: none;
+            background-color: var(--bg-darker);
+            border-top: 1px solid var(--border-color);
+            padding: 10px;
+            height: 150px;
+            overflow: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            color: var(--text-light);
+            position: relative;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+        
+        .output-content {
+            width: 100%;
+            height: calc(100% - 25px);
+            overflow: auto;
+            padding: 5px;
+            border-radius: 3px;
+            background-color: var(--bg-darkest);
+        }
+        
+        .output-close {
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-light);
+        }
+        
+        .output-close:hover {
+            color: var(--accent-blue);
+        }
+        
+        /* GitHub push modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .modal-content {
+            position: relative;
+            background-color: var(--bg-dark);
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 50%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .close-modal {
+            color: var(--text-light);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close-modal:hover {
+            color: var(--accent-blue);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-light);
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-body label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+        
+        .modal-body input, .modal-body textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-light);
+        }
+        
+        .modal-body textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .modal-footer {
+            text-align: right;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+        
+        .push-commit-btn {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .push-commit-btn:hover {
+            background-color: var(--accent-blue-hover);
+        }
+        
+        /* Success popup */
+        .success-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--accent-green);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1100;
+            transform: translateX(200%);
+            transition: transform 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 350px;
+        }
+        
+        .success-popup.show {
+            transform: translateX(0);
+        }
+        
+        .success-popup-icon {
+            font-size: 24px;
+        }
+        
+        .success-popup-content {
+            flex: 1;
+        }
+        
+        .success-popup-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .success-popup-message {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Secure Code AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/live-checker.html" class="nav-link active">Live Checker</a>
+            <a href="https://github.com/MohanRaja-tech/secure-demo" class="nav-link" target="_blank">
+                <i class="fa-brands fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+    
+    <div class="app-container">
+        <div class="editor-container">
+            <div class="code-controls">
+                <div class="language-selector">
+                    <label for="language-select">Language:</label>
+                    <select id="language-select">
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="java">Java</option>
+                        <option value="htmlmixed">HTML</option>
+                        <option value="cpp">C++</option>
+                    </select>
+                    <button id="load-template-btn" class="template-button">
+                        <i class="fa-solid fa-file-code"></i> Load Template
+                    </button>
+                </div>
+                <div class="controls-right">
+                    <button id="github-update-btn" class="github-button">
+                        <i class="fa-solid fa-download"></i> Update from GitHub
+                    </button>
+                    <button id="github-push-btn" class="github-button">
+                        <i class="fa-brands fa-github"></i> Push to GitHub
+                    </button>
+                    <button id="secure-all-btn" class="secure-button">
+                        <i class="fa-solid fa-shield-check"></i> Secure All
+                    </button>
+                </div>
+            </div>
+            
+            <textarea id="code-editor" placeholder="Type or paste your code here..."></textarea>
+            
+            <div class="status-bar">
+                <div class="typing-status">Ready</div>
+                <div class="vulnerability-count secure">0 vulnerabilities detected</div>
+            </div>
+        </div>
+        
+        <div class="feedback-container">
+            <div class="feedback-header">
+                <h2><i class="fa-solid fa-shield-virus"></i> Live Vulnerability Feedback</h2>
+            </div>
+            
+            <div class="vulnerability-list">
+                <div id="welcome-message" style="padding: 20px; text-align: center;">
+                    <i class="fa-solid fa-code" style="font-size: 48px; color: var(--accent-blue); margin-bottom: 15px; display: block;"></i>
+                    <h3>Start coding to see live security feedback</h3>
+                    <p>The live checker will analyze your code as you type and provide real-time vulnerability detection and fix suggestions.</p>
+                    <p>Try typing some potentially vulnerable code to see it in action!</p>
+                </div>
+                
+                <!-- Vulnerability items will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize CodeMirror editor
+            const codeEditor = document.getElementById('code-editor');
+            const editor = CodeMirror.fromTextArea(codeEditor, {
+                mode: 'python',
+                theme: 'monokai',
+                lineNumbers: true,
+                tabSize: 4,
+                indentWithTabs: false,
+                autofocus: true,
+                lineWrapping: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                styleActiveLine: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-lint-markers"]
+            });
+            
+            // Elements
+            const languageSelect = document.getElementById('language-select');
+            const secureAllBtn = document.getElementById('secure-all-btn');
+            const githubPushBtn = document.getElementById('github-push-btn');
+            const githubUpdateBtn = document.getElementById('github-update-btn');
+            const typingStatus = document.querySelector('.typing-status');
+            const vulnerabilityCount = document.querySelector('.vulnerability-count');
+            const vulnerabilityList = document.querySelector('.vulnerability-list');
+            const welcomeMessage = document.getElementById('welcome-message');
+            
+            // Variables
+            const API_URL = 'http://localhost:5000/api';
+            const REPO_URL = 'https://github.com/MohanRaja-tech/secure-demo.git';
+            let currentVulnerabilities = [];
+            let lineMarkers = {};
+            let typingTimer;
+            let currentLanguage = 'python';
+            let lastCheckedContent = '';
+            let lastCheckedLine = -1;
+            let isFirstCheck = true;
+            let pendingCheckRequest = null;
+            
+            // Proper mode mapping for CodeMirror
+            const languageModes = {
+                'python': 'python',
+                'javascript': 'javascript',
+                'java': 'text/x-java',
+                'htmlmixed': {name: 'htmlmixed', htmlMode: true},
+                'cpp': 'text/x-c++src'
+            };
+            
+            // Load additional mode files if needed
+            function loadCodeMirrorMode(language) {
+                // These are already loaded in the head section
+                const preloadedModes = ['python', 'javascript', 'htmlmixed', 'cpp', 'java'];
+                
+                if (preloadedModes.includes(language)) {
+                    return Promise.resolve();
+                }
+                
+                // For any additional modes not included in the head
+                if (!CodeMirror.modes[language] && !document.querySelector(`script[src*="mode/${language}/${language}.js"]`)) {
+                    return new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = `https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/${language}/${language}.min.js`;
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                }
+                return Promise.resolve();
+            }
+            
+            // Event Listeners
+            languageSelect.addEventListener('change', function() {
+                currentLanguage = this.value;
+                
+                // Set the appropriate CodeMirror mode
+                const mode = languageModes[currentLanguage] || currentLanguage;
+                
+                // Load the mode if needed
+                loadCodeMirrorMode(currentLanguage)
+                    .then(() => {
+                        editor.setOption('mode', mode);
+                        
+                        // Apply additional options for specific languages
+                        if (currentLanguage === 'cpp' || currentLanguage === 'java') {
+                            editor.setOption('matchBrackets', true);
+                            editor.setOption('autoCloseBrackets', true);
+                        }
+                        
+                        typingStatus.textContent = 'Language changed. Analyzing...';
+                        // Refresh is important for proper rendering
+                        editor.refresh();
+                        checkCode();
+                    })
+                    .catch(() => {
+                        console.warn(`Failed to load mode for ${currentLanguage}, using text mode`);
+                        editor.setOption('mode', 'text');
+                        checkCode();
+                    });
+            });
+            
+            secureAllBtn.addEventListener('click', function() {
+                secureAllCode();
+            });
+            
+            // Load template button click handler
+            document.getElementById('load-template-btn').addEventListener('click', function() {
+                // Show loading status
+                typingStatus.textContent = 'Loading template...';
+                
+                // Get current language
+                const lang = languageSelect.value;
+                
+                // Fetch template from API
+                fetch(`${API_URL}/template/${lang}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.template) {
+                            // Ask for confirmation if editor has content
+                            const currentCode = editor.getValue().trim();
+                            if (currentCode && !confirm("This will replace your current code. Continue?")) {
+                                typingStatus.textContent = 'Template loading cancelled';
+                                return;
+                            }
+                            
+                            // Load the template into the editor
+                            editor.setValue(data.template);
+                            
+                            // Set the correct syntax highlighting mode
+                            const mode = languageModes[lang] || lang;
+                            editor.setOption('mode', mode);
+                            // Ensure proper rendering
+                            editor.refresh();
+                            
+                            // Update status
+                            typingStatus.textContent = `${lang} template loaded`;
+                            
+                            // Run code check
+                            setTimeout(checkCode, 100);
+                        } else {
+                            typingStatus.textContent = `Error: ${data.error || 'No template available'}`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading template:', error);
+                        typingStatus.textContent = 'Error loading template';
+                    });
+            });
+            
+            // Add language options dynamically
+            const languageOptions = [
+                {value: 'python', label: 'Python'},
+                {value: 'javascript', label: 'JavaScript'},
+                {value: 'java', label: 'Java'},
+                {value: 'htmlmixed', label: 'HTML'},
+                {value: 'cpp', label: 'C++'}
+            ];
+            
+            // Clear select options and add new ones
+            while (languageSelect.firstChild) {
+                languageSelect.removeChild(languageSelect.firstChild);
+            }
+            
+            languageOptions.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang.value;
+                option.textContent = lang.label;
+                option.style.color = 'var(--text-primary)'; // Ensure option text is visible
+                option.style.backgroundColor = 'var(--bg-tertiary)'; // Set background color
+                option.style.fontWeight = 'bold'; // Make text bold
+                languageSelect.appendChild(option);
+            });
+            
+            // Set up live checking with debounce
+            editor.on('change', function(cm, change) {
+                // Clear any existing timer
+                clearTimeout(typingTimer);
+                
+                // Show typing status
+                typingStatus.textContent = 'Typing...';
+                
+                // Get the current cursor position
+                const cursor = editor.getCursor();
+                
+                // Set a new timer
+                typingTimer = setTimeout(function() {
+                    typingStatus.textContent = 'Analyzing...';
+                    checkCode(cursor.line);
+                }, 500); // 500ms debounce time
+            });
+            
+            // Function to check code for vulnerabilities
+            function checkCode(currentLine = null) {
+                const code = editor.getValue();
+                
+                // Skip if code is empty
+                if (!code.trim()) {
+                    clearVulnerabilities();
+                    updateVulnerabilityCount(0);
+                    showWelcomeMessage(true);
+                    typingStatus.textContent = 'Ready';
+                    return;
+                }
+                
+                // Don't recheck the exact same content
+                if (code === lastCheckedContent && currentLine === lastCheckedLine && !isFirstCheck) {
+                    typingStatus.textContent = 'No changes to analyze';
+                    return;
+                }
+                
+                isFirstCheck = false;
+                lastCheckedContent = code;
+                lastCheckedLine = currentLine;
+                
+                // Hide welcome message when there's code
+                showWelcomeMessage(false);
+                
+                // Prepare request data
+                const requestData = {
+                    code: code,
+                    language: currentLanguage
+                };
+                
+                // If we have a current line, include it
+                if (currentLine !== null) {
+                    requestData.line_number = currentLine;
+                }
+                
+                // Cancel any pending request
+                if (pendingCheckRequest && pendingCheckRequest.abort) {
+                    pendingCheckRequest.abort();
+                }
+                
+                // Call the API
+                pendingCheckRequest = fetch(`${API_URL}/live-check`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    pendingCheckRequest = null;
+                    
+                    // If no vulnerabilities found, ensure UI is clean
+                    if (!data.vulnerabilities || data.vulnerabilities.length === 0) {
+                        clearVulnerabilities();
+                        updateVulnerabilityCount(0);
+                        typingStatus.textContent = 'No vulnerabilities detected';
+                        return;
+                    }
+                    
+                    // Update the vulnerability list
+                    currentVulnerabilities = data.vulnerabilities || [];
+                    
+                    // Update vulnerability count
+                    updateVulnerabilityCount(currentVulnerabilities.length);
+                    
+                    // Clear previous markers
+                    clearMarkers();
+                    
+                    // Add markers for vulnerabilities
+                    if (currentVulnerabilities.length > 0) {
+                        // Update the UI with the vulnerabilities
+                        displayVulnerabilities(currentVulnerabilities);
+                        
+                        // Mark vulnerable lines
+                        currentVulnerabilities.forEach(vuln => {
+                            if (vuln.line_number !== undefined) {
+                                markVulnerableLine(vuln.line_number - 1, vuln.type, vuln.message);
+                            }
+                        });
+                    }
+                    
+                    // Process line-specific suggestions if present
+                    if (data.line_suggestions && Object.keys(data.line_suggestions).length > 0) {
+                        for (const [lineNum, suggestion] of Object.entries(data.line_suggestions)) {
+                            if (suggestion.vulnerability_type !== 'none') {
+                                const lineIndex = parseInt(lineNum);
+                                addLineSuggestion(lineIndex, suggestion);
+                            }
+                        }
+                    }
+                    
+                    // Update status
+                    typingStatus.textContent = 'Analysis complete';
+                })
+                .catch(error => {
+                    // Don't show errors for aborted requests
+                    if (error.name !== 'AbortError') {
+                        console.error('Error checking code:', error);
+                        typingStatus.textContent = 'Error analyzing code';
+                    }
+                    pendingCheckRequest = null;
+                });
+            }
+            
+            // Function to secure all code
+            function secureAllCode() {
+                const code = editor.getValue();
+                
+                // Skip if code is empty
+                if (!code.trim()) {
+                    return;
+                }
+                
+                // Show securing status
+                typingStatus.textContent = 'Securing code...';
+                
+                // Call the API with generate_secure flag
+                fetch(`${API_URL}/live-check`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        language: currentLanguage,
+                        generate_secure: true
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.secure_code) {
+                        // Update editor with secure code
+                        editor.setValue(data.secure_code);
+                        
+                        // Clear all vulnerability markers immediately
+                        clearMarkers();
+                        clearVulnerabilityList();
+                        currentVulnerabilities = [];
+                        updateVulnerabilityCount(0);
+                        
+                        // Mark code as clean to prevent rechecking from showing vulnerabilities
+                        lastCheckedContent = data.secure_code;
+                        
+                        // Update status
+                        typingStatus.textContent = 'Code secured';
+                        vulnerabilityCount.classList.add('secure');
+                        
+                        // Don't trigger automatic rechecking which might show vulnerabilities again
+                        // Instead, update the timestamp to avoid unnecessary rechecks
+                        isFirstCheck = false;
+                        
+                        // Show success message in feedback panel
+                        showSecureSuccessMessage();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error securing code:', error);
+                    typingStatus.textContent = 'Error securing code';
+                });
+            }
+            
+            // Function to show secure success message
+            function showSecureSuccessMessage() {
+                // Clear the vulnerability list first
+                clearVulnerabilityList();
+                
+                // Create success message
+                const successMessage = document.createElement('div');
+                successMessage.className = 'secure-success-message';
+                successMessage.innerHTML = `
+                    <div class="success-icon">
+                        <i class="fa-solid fa-shield-check"></i>
+                    </div>
+                    <h3>All Vulnerabilities Secured!</h3>
+                    <p>Your code is now protected against common security threats.</p>
+                    <div class="success-details">
+                        <div class="check-item"><i class="fa-solid fa-check-circle"></i> Injection attacks prevented</div>
+                        <div class="check-item"><i class="fa-solid fa-check-circle"></i> Input validation implemented</div>
+                        <div class="check-item"><i class="fa-solid fa-check-circle"></i> Security best practices applied</div>
+                    </div>
+                `;
+                
+                // Add to vulnerability list container
+                vulnerabilityList.appendChild(successMessage);
+                
+                // Add styles for the success message if they don't exist
+                if (!document.getElementById('secure-success-styles')) {
+                    const successStyles = document.createElement('style');
+                    successStyles.id = 'secure-success-styles';
+                    successStyles.textContent = `
+                        .secure-success-message {
+                            text-align: center;
+                            padding: 30px 15px;
+                            background-color: rgba(80, 250, 123, 0.1);
+                            border-radius: 8px;
+                            margin: 20px 0;
+                            border: 1px solid var(--accent-green);
+                        }
+                        .success-icon {
+                            font-size: 64px;
+                            color: var(--accent-green);
+                            margin-bottom: 15px;
+                            animation: pulse-success 2s infinite ease-in-out;
+                        }
+                        @keyframes pulse-success {
+                            0% { transform: scale(1); }
+                            50% { transform: scale(1.05); }
+                            100% { transform: scale(1); }
+                        }
+                        .secure-success-message h3 {
+                            color: var(--accent-green);
+                            margin-bottom: 10px;
+                            font-size: 22px;
+                        }
+                        .secure-success-message p {
+                            color: var(--text-light);
+                            margin-bottom: 20px;
+                        }
+                        .success-details {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 8px;
+                            margin-top: 15px;
+                            text-align: left;
+                            max-width: 300px;
+                            margin-left: auto;
+                            margin-right: auto;
+                        }
+                        .check-item {
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            color: var(--text-light);
+                        }
+                        .check-item i {
+                            color: var(--accent-green);
+                        }
+                    `;
+                    document.head.appendChild(successStyles);
+                }
+            }
+            
+            // Function to display vulnerabilities in the sidebar
+            function displayVulnerabilities(vulnerabilities) {
+                // Clear previous vulnerabilities
+                clearVulnerabilityList();
+                
+                // Group vulnerabilities by type
+                const groupedVulns = {};
+                vulnerabilities.forEach(vuln => {
+                    if (!groupedVulns[vuln.type]) {
+                        groupedVulns[vuln.type] = [];
+                    }
+                    groupedVulns[vuln.type].push(vuln);
+                });
+                
+                // Display each vulnerability group
+                for (const [type, vulns] of Object.entries(groupedVulns)) {
+                    const firstVuln = vulns[0];
+                    const vulnItem = document.createElement('div');
+                    vulnItem.className = 'vulnerability-item';
+                    
+                    // Set severity class
+                    if (firstVuln.severity === 'high' || firstVuln.severity === 'critical') {
+                        vulnItem.className += ' high';
+                    } else if (firstVuln.severity === 'medium') {
+                        vulnItem.className += ' warning';
+                    } else {
+                        vulnItem.className += ' info';
+                    }
+                    
+                    // Format vulnerability type for display
+                    const displayType = type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    vulnItem.innerHTML = `
+                        <div class="vulnerability-title">
+                            ${displayType} 
+                            <span>${vulns.length > 1 ? `(${vulns.length})` : ''}</span>
+                        </div>
+                        <div class="vulnerability-description">${firstVuln.message || 'Security vulnerability detected'}</div>
+                        <div class="vulnerability-line">
+                            <strong>Line ${firstVuln.line_number || '?'}:</strong> 
+                            ${firstVuln.code || firstVuln.line_content || 'Unknown code'}
+                        </div>
+                    `;
+                    
+                    // Add quick navigation
+                    const jumpToLineBtn = document.createElement('button');
+                    jumpToLineBtn.className = 'jump-to-line-button';
+                    jumpToLineBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Go to Line';
+                    jumpToLineBtn.addEventListener('click', function() {
+                        // Jump to the line in the editor
+                        editor.setCursor(firstVuln.line_number - 1);
+                        editor.focus();
+                        
+                        // Highlight the line briefly
+                        const lineHandle = editor.getLineHandle(firstVuln.line_number - 1);
+                        editor.addLineClass(lineHandle, 'background', 'flash-highlight');
+                        setTimeout(() => {
+                            editor.removeLineClass(lineHandle, 'background', 'flash-highlight');
+                        }, 1500);
+                    });
+                    vulnItem.appendChild(jumpToLineBtn);
+                    
+                    // Add fix suggestions if available
+                    if (firstVuln.fixes && firstVuln.fixes.length > 0) {
+                        const fixDiv = document.createElement('div');
+                        fixDiv.className = 'vulnerability-fix';
+                        fixDiv.textContent = firstVuln.fixes[0];
+                        vulnItem.appendChild(fixDiv);
+                        
+                        // Add apply fix button
+                        const applyBtn = document.createElement('button');
+                        applyBtn.className = 'apply-fix-button';
+                        applyBtn.textContent = 'Apply This Fix';
+                        applyBtn.dataset.vulnIndex = 0;
+                        applyBtn.dataset.vulnType = type;
+                        applyBtn.addEventListener('click', function() {
+                            applyFixToCode(this.dataset.vulnType);
+                        });
+                        vulnItem.appendChild(applyBtn);
+                    }
+                    
+                    vulnerabilityList.appendChild(vulnItem);
+                }
+            }
+            
+            // Function to add a suggestion for a specific line
+            function addLineSuggestion(lineIndex, suggestion) {
+                const vulnItem = document.createElement('div');
+                vulnItem.className = 'vulnerability-item';
+                vulnItem.className += ' info';
+                
+                // Format vulnerability type for display
+                const displayType = suggestion.vulnerability_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                vulnItem.innerHTML = `
+                    <div class="vulnerability-title">
+                        AI detected: ${displayType} 
+                    </div>
+                    <div class="vulnerability-description">${suggestion.description || 'Potential security issue detected'}</div>
+                    <div class="vulnerability-line">
+                        <strong>Line ${lineIndex + 1}:</strong> 
+                        ${editor.getLine(lineIndex) || 'Unknown code'}
+                    </div>
+                `;
+                
+                // Add jump to line button
+                const jumpToLineBtn = document.createElement('button');
+                jumpToLineBtn.className = 'jump-to-line-button';
+                jumpToLineBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Go to Line';
+                jumpToLineBtn.addEventListener('click', function() {
+                    editor.setCursor(lineIndex);
+                    editor.focus();
+                    
+                    // Highlight the line briefly
+                    const lineHandle = editor.getLineHandle(lineIndex);
+                    editor.addLineClass(lineHandle, 'background', 'flash-highlight');
+                    setTimeout(() => {
+                        editor.removeLineClass(lineHandle, 'background', 'flash-highlight');
+                    }, 1500);
+                });
+                vulnItem.appendChild(jumpToLineBtn);
+                
+                // Add fix suggestion if available
+                if (suggestion.secure_suggestion) {
+                    const fixDiv = document.createElement('div');
+                    fixDiv.className = 'vulnerability-fix';
+                    fixDiv.textContent = suggestion.secure_suggestion;
+                    vulnItem.appendChild(fixDiv);
+                    
+                    // Add apply fix button
+                    const applyBtn = document.createElement('button');
+                    applyBtn.className = 'apply-fix-button';
+                    applyBtn.textContent = 'Apply This Fix';
+                    applyBtn.dataset.line = lineIndex;
+                    applyBtn.dataset.suggestion = suggestion.secure_suggestion;
+                    applyBtn.addEventListener('click', function() {
+                        applyLineFix(parseInt(this.dataset.line), this.dataset.suggestion);
+                    });
+                    vulnItem.appendChild(applyBtn);
+                }
+                
+                vulnerabilityList.appendChild(vulnItem);
+                
+                // Mark the line as well
+                markVulnerableLine(lineIndex, suggestion.vulnerability_type, suggestion.description);
+            }
+            
+            // Function to mark a vulnerable line in the editor
+            function markVulnerableLine(lineIndex, type, message) {
+                const lineContent = editor.getLine(lineIndex);
+                if (!lineContent) return;
+                
+                // Add gutter marker
+                const marker = document.createElement('div');
+                marker.className = 'CodeMirror-gutter-vulnerability';
+                marker.title = message || `${type} vulnerability`;
+                
+                // Add the marker to the line
+                editor.setGutterMarker(lineIndex, 'CodeMirror-lint-markers', marker);
+                
+                // Track the marker for later removal
+                if (!lineMarkers[lineIndex]) {
+                    lineMarkers[lineIndex] = [];
+                }
+                lineMarkers[lineIndex].push(marker);
+                
+                // Highlight the vulnerable code
+                const line = editor.getLine(lineIndex);
+                const lineHandle = editor.addLineClass(lineIndex, 'background', 'cm-vulnerability-line');
+                lineMarkers[lineIndex].push(lineHandle);
+            }
+            
+            // Function to apply a fix to a vulnerable line
+            function applyLineFix(lineIndex, suggestion) {
+                // Replace the line with the suggestion
+                // We'll need to parse out just the code from the suggestion
+                let codeToApply = suggestion;
+                
+                // If it's a structured suggestion (like a fix explanation), extract the code
+                if (suggestion.includes('```')) {
+                    const match = suggestion.match(/```[a-z]*\n([\s\S]*?)\n```/);
+                    if (match && match[1]) {
+                        codeToApply = match[1].trim();
+                    }
+                }
+                
+                // Replace the line
+                editor.replaceRange(
+                    codeToApply, 
+                    {line: lineIndex, ch: 0}, 
+                    {line: lineIndex, ch: editor.getLine(lineIndex).length}
+                );
+                
+                // Re-check the code
+                setTimeout(() => checkCode(), 100);
+            }
+            
+            // Function to apply a fix for a vulnerability type
+            function applyFixToCode(vulnType) {
+                // Find all vulnerabilities of this type
+                const vulnsToFix = currentVulnerabilities.filter(v => v.type === vulnType);
+                
+                if (vulnsToFix.length === 0) return;
+                
+                // Call the API to get a secure version of the code
+                typingStatus.textContent = 'Applying fix...';
+                
+                fetch(`${API_URL}/scan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: editor.getValue(),
+                        language: currentLanguage
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.secure_code) {
+                        // Update editor with secure code
+                        editor.setValue(data.secure_code);
+                        
+                        // Re-check the code
+                        setTimeout(checkCode, 100);
+                        
+                        // Update status
+                        typingStatus.textContent = 'Fix applied';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error applying fix:', error);
+                    typingStatus.textContent = 'Error applying fix';
+                });
+            }
+            
+            // Function to clear vulnerability markers
+            function clearMarkers() {
+                // Clear line markers
+                for (const lineNum in lineMarkers) {
+                    const markers = lineMarkers[lineNum];
+                    markers.forEach(marker => {
+                        if (marker.lineClass) {
+                            editor.removeLineClass(marker, 'background', 'cm-vulnerability-line');
+                        }
+                    });
+                    editor.setGutterMarker(parseInt(lineNum), 'CodeMirror-lint-markers', null);
+                }
+                
+                lineMarkers = {};
+            }
+            
+            // Function to clear vulnerability list
+            function clearVulnerabilityList() {
+                // Remove all child elements except welcome message
+                Array.from(vulnerabilityList.children).forEach(child => {
+                    if (child.id !== 'welcome-message') {
+                        vulnerabilityList.removeChild(child);
+                    }
+                });
+            }
+            
+            // Function to clear all vulnerabilities
+            function clearVulnerabilities() {
+                clearMarkers();
+                clearVulnerabilityList();
+                currentVulnerabilities = [];
+            }
+            
+            // Function to update vulnerability count
+            function updateVulnerabilityCount(count) {
+                vulnerabilityCount.textContent = `${count} vulnerabilit${count === 1 ? 'y' : 'ies'} detected`;
+                
+                if (count === 0) {
+                    vulnerabilityCount.classList.add('secure');
+                } else {
+                    vulnerabilityCount.classList.remove('secure');
+                }
+            }
+            
+            // Function to show/hide welcome message
+            function showWelcomeMessage(show) {
+                welcomeMessage.style.display = show ? 'block' : 'none';
+            }
+            
+            // Load demo code on button click
+            function loadDemoCode() {
+                // Show language-specific demos
+                const languageDemos = {
+                    'python': '/api/demo',
+                    'javascript': '/api/demo/js',
+                    'java': '/api/demo/java',
+                    'htmlmixed': '/api/demo',
+                    'cpp': '/api/demo'
+                };
+                
+                const demoEndpoint = languageDemos[currentLanguage] || '/api/demo';
+                
+                fetch(`${API_URL.replace('/api', '')}${demoEndpoint}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.original_code) {
+                            editor.setValue(data.original_code);
+                            setTimeout(checkCode, 100);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading demo code:', error);
+                        // Fallback to regular demo if language-specific demo fails
+                        if (demoEndpoint !== '/api/demo') {
+                            fetch(`${API_URL}/demo`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.original_code) {
+                                        editor.setValue(data.original_code);
+                                        setTimeout(checkCode, 100);
+                                    }
+                                })
+                                .catch(err => console.error('Error loading fallback demo:', err));
+                        }
+                    });
+            }
+            
+            // Add demo button to welcome message
+            const demoButton = document.createElement('button');
+            demoButton.className = 'secure-button';
+            demoButton.style.margin = '15px auto';
+            demoButton.style.display = 'block';
+            demoButton.innerHTML = '<i class="fa-solid fa-code"></i> Load Demo Code';
+            demoButton.addEventListener('click', loadDemoCode);
+            welcomeMessage.appendChild(demoButton);
+            
+            // Add language demo section to welcome message
+            const languageDemoSection = document.createElement('div');
+            languageDemoSection.className = 'language-demo-section';
+            languageDemoSection.innerHTML = `
+                <p style="margin-top: 15px;">Try different languages:</p>
+                <div class="demo-language-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 10px;">
+                    <button class="lang-demo-btn" data-lang="python"><i class="fa-brands fa-python"></i> Python</button>
+                    <button class="lang-demo-btn" data-lang="javascript"><i class="fa-brands fa-js"></i> JavaScript</button>
+                    <button class="lang-demo-btn" data-lang="java"><i class="fa-brands fa-java"></i> Java</button>
+                    <button class="lang-demo-btn" data-lang="htmlmixed"><i class="fa-brands fa-html5"></i> HTML</button>
+                    <button class="lang-demo-btn" data-lang="cpp"><i class="fa-solid fa-code"></i> C++</button>
+                </div>
+            `;
+            welcomeMessage.appendChild(languageDemoSection);
+            
+            // Style the language demo buttons
+            const style = document.createElement('style');
+            style.textContent = `
+                .lang-demo-btn {
+                    padding: 5px 10px;
+                    background-color: var(--bg-darker);
+                    color: var(--text-light);
+                    border: 1px solid var(--border-color);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: all 0.2s;
+                }
+                .lang-demo-btn:hover {
+                    background-color: var(--accent-blue);
+                    color: white;
+                }
+                .jump-to-line-button {
+                    background-color: var(--bg-darkest);
+                    color: var(--accent-blue);
+                    border: 1px solid var(--accent-blue);
+                    border-radius: 4px;
+                    padding: 5px 10px;
+                    margin-right: 10px;
+                    font-size: 12px;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                    margin-bottom: 10px;
+                }
+                .jump-to-line-button:hover {
+                    background-color: rgba(139, 233, 253, 0.1);
+                }
+                .flash-highlight {
+                    animation: flash-highlight 1.5s ease;
+                }
+                @keyframes flash-highlight {
+                    0%, 100% { background-color: rgba(139, 233, 253, 0.1); }
+                    50% { background-color: rgba(139, 233, 253, 0.3); }
+                }
+                .cm-vulnerability-line {
+                    background-color: rgba(255, 85, 85, 0.1);
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Add event listeners for language demo buttons
+            document.querySelectorAll('.lang-demo-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lang = this.dataset.lang;
+                    languageSelect.value = lang;
+                    currentLanguage = lang;
+                    
+                    // Update CodeMirror mode
+                    const mode = languageModes[lang] || lang;
+                    loadCodeMirrorMode(lang)
+                        .then(() => {
+                            editor.setOption('mode', mode);
+                            
+                            // Load demo for this language
+                            const demoEndpoint = `/api/demo/${lang}`;
+                            fetch(`${API_URL.replace('/api', '')}${demoEndpoint}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.original_code) {
+                                        editor.setValue(data.original_code);
+                                        setTimeout(checkCode, 100);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error(`Error loading ${lang} demo:`, error);
+                                    // Try to fallback to the main demo
+                                    fetch(`${API_URL}/demo`)
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.original_code) {
+                                                editor.setValue(data.original_code);
+                                                setTimeout(checkCode, 100);
+                                            }
+                                        })
+                                        .catch(err => console.error('Error loading fallback demo:', err));
+                                });
+                        })
+                        .catch(() => {
+                            console.warn(`Failed to load mode for ${lang}, using text mode`);
+                            editor.setOption('mode', 'text');
+                        });
+                });
+            });
+            
+            // Create GitHub push modal
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'github-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <div class="modal-header">
+                        <h3><i class="fa-brands fa-github"></i> Push to GitHub</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label for="filename">Filename</label>
+                        <input type="text" id="push-filename" placeholder="example.py">
+                        
+                        <label for="commit-msg">Commit Message</label>
+                        <textarea id="commit-msg" placeholder="Fixed security vulnerabilities in code"></textarea>
+                        
+                        <div id="push-status" style="margin-top: 10px; color: var(--accent-green);"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="push-commit-btn">Commit & Push</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // GitHub push functionality
+            const githubModal = document.getElementById('github-modal');
+            const closeModal = document.querySelector('.close-modal');
+            const pushCommitBtn = document.querySelector('.push-commit-btn');
+            const pushFilename = document.getElementById('push-filename');
+            const commitMsg = document.getElementById('commit-msg');
+            const pushStatus = document.getElementById('push-status');
+            
+            // Function to show success popup
+            function showSuccessPopup(title, message) {
+                // Remove existing popup if present
+                const existingPopup = document.querySelector('.success-popup');
+                if (existingPopup) {
+                    document.body.removeChild(existingPopup);
+                }
+                
+                // Create new popup
+                const popup = document.createElement('div');
+                popup.className = 'success-popup';
+                popup.innerHTML = `
+                    <div class="success-popup-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="success-popup-content">
+                        <div class="success-popup-title">${title}</div>
+                        <div class="success-popup-message">${message}</div>
+                    </div>
+                `;
+                
+                // Add to body
+                document.body.appendChild(popup);
+                
+                // Trigger animation
+                setTimeout(() => popup.classList.add('show'), 10);
+                
+                // Auto hide after 4 seconds
+                setTimeout(() => {
+                    popup.style.transition = 'opacity 0.5s ease-out, transform 0.3s ease-out';
+                    popup.style.opacity = '0';
+                    setTimeout(() => {
+                        if (popup.parentNode) {
+                            document.body.removeChild(popup);
+                        }
+                    }, 500);
+                }, 4000);
+            }
+            
+            // Open modal when GitHub button is clicked
+            githubPushBtn.addEventListener('click', function() {
+                // Prefill filename based on the language if empty
+                if (!pushFilename.value) {
+                    const fileExtensions = {
+                        'python': '.py',
+                        'javascript': '.js',
+                        'php': '.php',
+                        'java': '.java',
+                        'csharp': '.cs',
+                        'ruby': '.rb',
+                        'go': '.go',
+                        'htmlmixed': '.html',
+                        'css': '.css',
+                        'sql': '.sql',
+                        'c': '.c',
+                        'cpp': '.cpp'
+                    };
+                    
+                    pushFilename.value = `secure_code${fileExtensions[currentLanguage] || '.txt'}`;
+                }
+                
+                // Prefill commit message if empty
+                if (!commitMsg.value) {
+                    commitMsg.value = `Fixed security vulnerabilities in ${currentLanguage} code`;
+                }
+                
+                githubModal.style.display = 'block';
+            });
+            
+            // Close modal when X is clicked
+            closeModal.addEventListener('click', function() {
+                githubModal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === githubModal) {
+                    githubModal.style.display = 'none';
+                }
+            });
+            
+            // Handle GitHub push
+            pushCommitBtn.addEventListener('click', function() {
+                const filename = pushFilename.value.trim();
+                const message = commitMsg.value.trim();
+                const code = editor.getValue();
+                
+                if (!filename) {
+                    pushStatus.textContent = 'Error: Filename is required';
+                    pushStatus.style.color = 'var(--accent-red)';
+                    return;
+                }
+                
+                if (!message) {
+                    pushStatus.textContent = 'Error: Commit message is required';
+                    pushStatus.style.color = 'var(--accent-red)';
+                    return;
+                }
+                
+                if (!code.trim()) {
+                    pushStatus.textContent = 'Error: No code to push';
+                    pushStatus.style.color = 'var(--accent-red)';
+                    return;
+                }
+                
+                // Show loading status
+                pushStatus.textContent = 'Pushing to GitHub...';
+                pushStatus.style.color = 'var(--text-light)';
+                
+                // Send to server with proper error handling
+                fetch(`${API_URL}/github-push`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        filename: filename,
+                        commit_message: message,
+                        repo_url: REPO_URL
+                    }),
+                    // Add timeout to prevent hanging requests
+                    timeout: 30000
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        pushStatus.textContent = 'Successfully pushed to GitHub!';
+                        pushStatus.style.color = 'var(--accent-green)';
+                        
+                        // Show success popup
+                        showSuccessPopup('Success', `Code pushed to GitHub as ${filename}`);
+                        
+                        // Close modal after 2 seconds
+                        setTimeout(() => {
+                            githubModal.style.display = 'none';
+                            // Reset fields
+                            pushStatus.textContent = '';
+                        }, 2000);
+                    } else {
+                        pushStatus.textContent = `Error: ${data.error || 'Failed to push to GitHub'}`;
+                        pushStatus.style.color = 'var(--accent-red)';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error pushing to GitHub:', error);
+                    pushStatus.textContent = `Error: ${error.message || 'Problem connecting to server'}`;
+                    pushStatus.style.color = 'var(--accent-red)';
+                    
+                    // Add retry button
+                    const retryButton = document.createElement('button');
+                    retryButton.textContent = 'Retry';
+                    retryButton.className = 'retry-button';
+                    retryButton.style.marginTop = '10px';
+                    retryButton.style.padding = '5px 10px';
+                    retryButton.style.backgroundColor = 'var(--accent-blue)';
+                    retryButton.style.color = 'white';
+                    retryButton.style.border = 'none';
+                    retryButton.style.borderRadius = '4px';
+                    retryButton.style.cursor = 'pointer';
+                    retryButton.addEventListener('click', function() {
+                        // Remove this button
+                        pushStatus.removeChild(retryButton);
+                        // Try again
+                        pushCommitBtn.click();
+                    });
+                    pushStatus.appendChild(retryButton);
+                });
+            });
+            
+            // Update the CodeMirror container height when output is shown/hidden
+            function updateEditorHeight() {
+                const cmElement = document.querySelector('.CodeMirror');
+                // Update height without output container
+                cmElement.style.height = 'calc(100vh - 170px)';
+                editor.refresh();
+            }
+            
+            // Run code functionality
+            /* Run code functionality removed */
+            
+            // GitHub Update button
+            githubUpdateBtn.addEventListener('click', function() {
+                // Create update modal if it doesn't exist
+                if (!document.getElementById('github-update-modal')) {
+                    const updateModal = document.createElement('div');
+                    updateModal.className = 'modal';
+                    updateModal.id = 'github-update-modal';
+                    updateModal.innerHTML = `
+                        <div class="modal-content">
+                            <span class="close-update-modal">&times;</span>
+                            <div class="modal-header">
+                                <h3><i class="fa-solid fa-download"></i> Update from GitHub</h3>
+                            </div>
+                            <div class="modal-body">
+                                <label for="file-to-update">File to retrieve</label>
+                                <input type="text" id="file-to-update" placeholder="path/to/file.py">
+                                
+                                <div id="update-status" style="margin-top: 10px; color: var(--accent-green);"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="push-commit-btn update-btn">Retrieve File</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(updateModal);
+                    
+                    // Close button functionality
+                    const closeUpdateModal = document.querySelector('.close-update-modal');
+                    closeUpdateModal.addEventListener('click', function() {
+                        updateModal.style.display = 'none';
+                    });
+                    
+                    // Close when clicking outside
+                    window.addEventListener('click', function(event) {
+                        if (event.target === updateModal) {
+                            updateModal.style.display = 'none';
+                        }
+                    });
+                    
+                    // Update button functionality
+                    const updateBtn = document.querySelector('.update-btn');
+                    const fileToUpdate = document.getElementById('file-to-update');
+                    const updateStatus = document.getElementById('update-status');
+                    
+                    updateBtn.addEventListener('click', function() {
+                        const filename = fileToUpdate.value.trim();
+                        
+                        if (!filename) {
+                            updateStatus.textContent = 'Error: Filename is required';
+                            updateStatus.style.color = 'var(--accent-red)';
+                            return;
+                        }
+                        
+                        // Show loading status
+                        updateStatus.textContent = 'Retrieving file from GitHub...';
+                        updateStatus.style.color = 'var(--text-light)';
+                        
+                        // Clear any previous errors
+                        while (updateStatus.childNodes.length > 1) {
+                            updateStatus.removeChild(updateStatus.lastChild);
+                        }
+                        
+                        // Show loading indicator
+                        const loadingSpinner = document.createElement('div');
+                        loadingSpinner.className = 'loading-spinner';
+                        loadingSpinner.style.display = 'inline-block';
+                        loadingSpinner.style.marginLeft = '10px';
+                        loadingSpinner.style.width = '16px';
+                        loadingSpinner.style.height = '16px';
+                        loadingSpinner.style.border = '2px solid var(--accent-blue)';
+                        loadingSpinner.style.borderTopColor = 'transparent';
+                        loadingSpinner.style.borderRadius = '50%';
+                        loadingSpinner.style.animation = 'spinner-rotate 0.8s linear infinite';
+                        updateStatus.appendChild(loadingSpinner);
+                        
+                        // Add spinner animation if it doesn't exist
+                        if (!document.getElementById('spinner-style')) {
+                            const spinnerStyle = document.createElement('style');
+                            spinnerStyle.id = 'spinner-style';
+                            spinnerStyle.textContent = `
+                                @keyframes spinner-rotate {
+                                    0% { transform: rotate(0deg); }
+                                    100% { transform: rotate(360deg); }
+                                }
+                            `;
+                            document.head.appendChild(spinnerStyle);
+                        }
+                        
+                        // Send to server with improved error handling
+                        fetch(`${API_URL}/github-retrieve`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                filename: filename,
+                                repo_url: REPO_URL
+                            }),
+                            // Add timeout to prevent hanging requests
+                            timeout: 30000
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Remove loading spinner
+                            if (loadingSpinner.parentNode) {
+                                updateStatus.removeChild(loadingSpinner);
+                            }
+                            
+                            if (data.success) {
+                                try {
+                                    // Update the editor with the retrieved code
+                                    // Make sure the code is properly decoded if it contains special characters
+                                    const decodedCode = data.code || '';
+                                    editor.setValue(decodedCode);
+                                    
+                                    // Store the original filename for later pushing
+                                    editor.originalFilename = filename;
+                                    
+                                    // Update language selector if we can detect the language
+                                    const extension = filename.split('.').pop().toLowerCase();
+                                    const extensionToLanguage = {
+                                        'py': 'python',
+                                        'js': 'javascript',
+                                        'java': 'java',
+                                        'html': 'htmlmixed',
+                                        'htm': 'htmlmixed',
+                                        'cpp': 'cpp',
+                                        'cc': 'cpp',
+                                        'h': 'cpp',
+                                        'hpp': 'cpp'
+                                    };
+                                    
+                                    if (extensionToLanguage[extension]) {
+                                        languageSelect.value = extensionToLanguage[extension];
+                                        currentLanguage = extensionToLanguage[extension];
+                                        
+                                        // Set the appropriate CodeMirror mode
+                                        const mode = languageModes[currentLanguage] || currentLanguage;
+                                        loadCodeMirrorMode(currentLanguage)
+                                            .then(() => {
+                                                editor.setOption('mode', mode);
+                                                // Ensure editor refreshes to show highlighting
+                                                editor.refresh();
+                                                setTimeout(checkCode, 100);
+                                            })
+                                            .catch(err => {
+                                                console.warn(`Failed to load mode: ${err.message}`);
+                                                editor.setOption('mode', 'text');
+                                                editor.refresh();
+                                                setTimeout(checkCode, 100);
+                                            });
+                                    }
+                                    
+                                    updateStatus.textContent = 'File retrieved successfully!';
+                                    updateStatus.style.color = 'var(--accent-green)';
+                                    
+                                    // Add quick push button for this file
+                                    const quickPushSection = document.createElement('div');
+                                    quickPushSection.className = 'quick-push-section';
+                                    quickPushSection.innerHTML = `
+                                        <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                                            <label for="quick-commit-msg">After editing, commit changes back to ${filename}:</label>
+                                            <textarea id="quick-commit-msg" 
+                                                      placeholder="Enter commit message" 
+                                                      style="width: 100%; margin-top: 8px; min-height: 60px;"></textarea>
+                                            <button id="quick-push-btn" class="push-commit-btn" 
+                                                    style="margin-top: 10px; width: 100%;">
+                                                <i class="fa-solid fa-upload"></i> Push Changes Back
+                                            </button>
+                                        </div>
+                                    `;
+                                    
+                                    // Remove any existing push section
+                                    const existingQuickPushSection = document.querySelector('.quick-push-section');
+                                    if (existingQuickPushSection) {
+                                        existingQuickPushSection.remove();
+                                    }
+                                    
+                                    // Add the quick push section to the modal body
+                                    document.querySelector('.modal-body').appendChild(quickPushSection);
+                                    
+                                    // Setup quick push button
+                                    const quickPushBtn = document.getElementById('quick-push-btn');
+                                    const quickCommitMsg = document.getElementById('quick-commit-msg');
+                                    
+                                    // Pre-fill commit message with a sensible default
+                                    quickCommitMsg.value = `Updated ${filename} with security improvements`;
+                                    
+                                    // Add event listener for push button
+                                    quickPushBtn.addEventListener('click', function() {
+                                        const message = quickCommitMsg.value.trim();
+                                        const code = editor.getValue();
+                                        const originalFile = editor.originalFilename || filename;
+                                        
+                                        if (!message) {
+                                            updateStatus.textContent = 'Error: Commit message is required';
+                                            updateStatus.style.color = 'var(--accent-red)';
+                                            return;
+                                        }
+                                        
+                                        if (!code.trim()) {
+                                            updateStatus.textContent = 'Error: No code to push';
+                                            updateStatus.style.color = 'var(--accent-red)';
+                                            return;
+                                        }
+                                        
+                                        if (!originalFile) {
+                                            updateStatus.textContent = 'Error: No filename specified';
+                                            updateStatus.style.color = 'var(--accent-red)';
+                                            return;
+                                        }
+                                        
+                                        // Show loading status
+                                        updateStatus.textContent = 'Pushing changes back to GitHub...';
+                                        updateStatus.style.color = 'var(--text-light)';
+                                        
+                                        // Clear any previous errors or elements
+                                        while (updateStatus.childNodes.length > 1) {
+                                            updateStatus.removeChild(updateStatus.lastChild);
+                                        }
+                                        
+                                        // Show loading indicator
+                                        const loadingSpinner = document.createElement('div');
+                                        loadingSpinner.className = 'loading-spinner';
+                                        loadingSpinner.style.display = 'inline-block';
+                                        loadingSpinner.style.marginLeft = '10px';
+                                        loadingSpinner.style.width = '16px';
+                                        loadingSpinner.style.height = '16px';
+                                        loadingSpinner.style.border = '2px solid var(--accent-blue)';
+                                        loadingSpinner.style.borderTopColor = 'transparent';
+                                        loadingSpinner.style.borderRadius = '50%';
+                                        loadingSpinner.style.animation = 'spinner-rotate 0.8s linear infinite';
+                                        updateStatus.appendChild(loadingSpinner);
+                                        
+                                        // Send to server with proper error handling
+                                        fetch(`${API_URL}/github-push`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                            },
+                                            body: JSON.stringify({
+                                                code: code,
+                                                filename: originalFile,
+                                                commit_message: message,
+                                                repo_url: REPO_URL
+                                            })
+                                        })
+                                        .then(response => {
+                                            // First remove the loading spinner
+                                            if (updateStatus.contains(loadingSpinner)) {
+                                                updateStatus.removeChild(loadingSpinner);
+                                            }
+                                            
+                                            if (!response.ok) {
+                                                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                                            }
+                                            return response.json();
+                                        })
+                                        .then(data => {
+                                            if (data.success) {
+                                                updateStatus.textContent = `Successfully pushed changes to GitHub!`;
+                                                updateStatus.style.color = 'var(--accent-green)';
+                                                
+                                                // Add timestamp info
+                                                const timestamp = document.createElement('div');
+                                                timestamp.className = 'timestamp';
+                                                timestamp.textContent = `Latest update: ${new Date().toLocaleTimeString()}`;
+                                                timestamp.style.fontSize = '0.8em';
+                                                timestamp.style.marginTop = '5px';
+                                                timestamp.style.color = 'var(--text-light)';
+                                                updateStatus.appendChild(timestamp);
+                                                
+                                                // Add file info
+                                                const fileInfo = document.createElement('div');
+                                                fileInfo.className = 'file-info';
+                                                fileInfo.textContent = `File: ${originalFile}`;
+                                                fileInfo.style.fontSize = '0.8em';
+                                                fileInfo.style.color = 'var(--text-light)';
+                                                updateStatus.appendChild(fileInfo);
+                                            } else {
+                                                updateStatus.textContent = `Error: ${data.error || 'Unknown error'}`;
+                                                updateStatus.style.color = 'var(--accent-red)';
+                                                
+                                                if (data.details) {
+                                                    const errorDetails = document.createElement('div');
+                                                    errorDetails.className = 'error-details';
+                                                    errorDetails.textContent = data.details;
+                                                    errorDetails.style.fontSize = '0.8em';
+                                                    errorDetails.style.marginTop = '5px';
+                                                    errorDetails.style.color = 'var(--text-light)';
+                                                    updateStatus.appendChild(errorDetails);
+                                                }
+                                                
+                                                // Add retry button
+                                                const retryButton = document.createElement('button');
+                                                retryButton.textContent = 'Retry';
+                                                retryButton.className = 'retry-button';
+                                                retryButton.style.marginTop = '10px';
+                                                retryButton.style.padding = '5px 10px';
+                                                retryButton.style.backgroundColor = 'var(--accent-blue)';
+                                                retryButton.style.color = 'white';
+                                                retryButton.style.border = 'none';
+                                                retryButton.style.borderRadius = '4px';
+                                                retryButton.style.cursor = 'pointer';
+                                                retryButton.addEventListener('click', function() {
+                                                    updateStatus.removeChild(retryButton);
+                                                    if (errorDetails) {
+                                                        updateStatus.removeChild(errorDetails);
+                                                    }
+                                                    quickPushBtn.click(); // Retry the push
+                                                });
+                                                updateStatus.appendChild(retryButton);
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error pushing to GitHub:', error);
+                                            updateStatus.textContent = `Error: ${error.message || 'Problem connecting to server'}`;
+                                            updateStatus.style.color = 'var(--accent-red)';
+                                            
+                                            // Add retry button
+                                            const retryButton = document.createElement('button');
+                                            retryButton.textContent = 'Retry';
+                                            retryButton.className = 'retry-button';
+                                            retryButton.style.marginTop = '10px';
+                                            retryButton.style.padding = '5px 10px';
+                                            retryButton.style.backgroundColor = 'var(--accent-blue)';
+                                            retryButton.style.color = 'white';
+                                            retryButton.style.border = 'none';
+                                            retryButton.style.borderRadius = '4px';
+                                            retryButton.style.cursor = 'pointer';
+                                            retryButton.addEventListener('click', function() {
+                                                updateStatus.removeChild(retryButton);
+                                                quickPushBtn.click(); // Retry the push
+                                            });
+                                            updateStatus.appendChild(retryButton);
+                                        });
+                                    });
+                                    
+                                    // Show success popup
+                                    showSuccessPopup('File Retrieved', `Successfully retrieved ${filename} from GitHub`);
+                                } catch (error) {
+                                    console.error('Error processing file data:', error);
+                                    updateStatus.textContent = `Error processing file: ${error.message}`;
+                                    updateStatus.style.color = 'var(--accent-red)';
+                                }
+                            } else {
+                                updateStatus.textContent = `Error: ${data.error || 'Failed to retrieve file'}`;
+                                updateStatus.style.color = 'var(--accent-red)';
+                                
+                                // Show more detailed error if available
+                                if (data.details) {
+                                    const errorDetails = document.createElement('div');
+                                    errorDetails.style.marginTop = '10px';
+                                    errorDetails.style.fontSize = '12px';
+                                    errorDetails.style.color = '#aaa';
+                                    errorDetails.textContent = data.details;
+                                    updateStatus.appendChild(errorDetails);
+                                }
+                                
+                                // Add retry button
+                                const retryButton = document.createElement('button');
+                                retryButton.textContent = 'Retry';
+                                retryButton.className = 'retry-button';
+                                retryButton.style.marginTop = '10px';
+                                retryButton.style.padding = '5px 10px';
+                                retryButton.style.backgroundColor = 'var(--accent-blue)';
+                                retryButton.style.color = 'white';
+                                retryButton.style.border = 'none';
+                                retryButton.style.borderRadius = '4px';
+                                retryButton.style.cursor = 'pointer';
+                                retryButton.addEventListener('click', function() {
+                                    // Remove this button and try again
+                                    updateBtn.click();
+                                });
+                                updateStatus.appendChild(retryButton);
+                            }
+                        })
+                        .catch(error => {
+                            // Remove loading spinner
+                            if (loadingSpinner.parentNode) {
+                                updateStatus.removeChild(loadingSpinner);
+                            }
+                            
+                            console.error('Error retrieving file:', error);
+                            updateStatus.textContent = `Error: ${error.message || 'Problem connecting to server'}`;
+                            updateStatus.style.color = 'var(--accent-red)';
+                            
+                            // Add retry button
+                            const retryButton = document.createElement('button');
+                            retryButton.textContent = 'Retry';
+                            retryButton.className = 'retry-button';
+                            retryButton.style.marginTop = '10px';
+                            retryButton.style.padding = '5px 10px';
+                            retryButton.style.backgroundColor = 'var(--accent-blue)';
+                            retryButton.style.color = 'white';
+                            retryButton.style.border = 'none';
+                            retryButton.style.borderRadius = '4px';
+                            retryButton.style.cursor = 'pointer';
+                            retryButton.addEventListener('click', function() {
+                                // Remove this button and try again
+                                updateBtn.click();
+                            });
+                            updateStatus.appendChild(retryButton);
+                        });
+                    });
+                } else {
+                    // Reset the quick push section if it exists
+                    const existingQuickPushSection = document.querySelector('.quick-push-section');
+                    if (existingQuickPushSection) {
+                        existingQuickPushSection.remove();
+                    }
+                    
+                    // Reset status
+                    const updateStatus = document.getElementById('update-status');
+                    if (updateStatus) {
+                        updateStatus.textContent = '';
+                    }
+                }
+                
+                // Show the update modal
+                document.getElementById('github-update-modal').style.display = 'block';
+            });
+            
+            // Initial code check with a small delay
+            setTimeout(checkCode, 100);
+        });
+    </script>
+</body>
+</html> 

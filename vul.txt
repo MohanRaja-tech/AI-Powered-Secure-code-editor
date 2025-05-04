@@ -1,0 +1,97 @@
+SQL Injection
+
+Command Injection
+
+Cross-Site Scripting (XSS)
+
+Cross-Site Request Forgery (CSRF)
+
+Insecure Deserialization
+
+Buffer Overflow
+
+Path Traversal
+
+LDAP Injection
+
+XML External Entity (XXE)
+
+Broken Authentication
+
+Session Hijacking
+
+Privilege Escalation
+
+Insecure Password Storage
+
+Hardcoded Credentials
+
+Sensitive Data Exposure
+
+Improper Encryption
+
+Insecure Data Storage
+
+Logging Sensitive Data
+
+Information Disclosure in Errors
+
+Open Redirects
+
+Clickjacking
+
+CORS Misconfiguration
+
+Exposed Admin Panels
+
+Outdated Libraries/Components
+
+Race Conditions
+
+Business Logic Errors
+
+Uncontrolled Resource Consumption (DoS)
+
+Poor Exception Management
+
+Exposed Debug Mode
+
+Default Credentials
+
+Missing Security Headers
+
+Unsafe JavaScript Execution
+
+Poor Token Handling
+
+DOM Manipulation Without Sanitization
+
+Improper Rate Limiting (APIs)
+
+Insecure API Authentication
+
+Over-Privileged Tokens or API Keys
+
+Vulnerable Dependencies
+
+No Dependency Scanning
+
+Exposed Dev Tools
+
+Debug Logs in Production
+
+Test Data Leaks
+
+Insecure Mobile Communication
+
+Sensitive Data in Mobile Backups
+
+Reverse Engineering of Mobile Apps
+
+Unprotected Android Intents
+
+Backdoors or Debug Routes
+
+Accidental Secret Commits
+
+Copy-Pasted Insecure Code

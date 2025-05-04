@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Security Vulnerability Scanner</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <!-- Add animate.css for more animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Particles background for visual effect -->
+        <div id="particles-js" class="particles-container"></div>
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo-container">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h1>Secure Code AI</h1>
+            </div>
+            <div class="mode-selector">
+                <button id="scan-mode-btn" class="mode-button active">
+                    <i class="fa-solid fa-magnifying-glass"></i> Scan Code
+                </button>
+                <button id="chat-mode-btn" class="mode-button">
+                    <i class="fa-solid fa-message"></i> AI Chat
+                </button>
+                <a href="/live-checker.html" class="mode-button">
+                    <i class="fa-solid fa-code"></i> Live Checker
+                </a>
+            </div>
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2><i class="fa-solid fa-comments"></i> Conversation</h2>
+                </div>
+                <div class="chat-messages" id="chat-history">
+                    <div class="bot-message animate__animated animate__fadeIn">
+                        <div class="message-content">
+                            <p>Welcome to the AI Security Vulnerability Scanner <i class="fa-solid fa-shield-halved"></i></p>
+                            <p>Paste your code in the input box below and click 'Scan Code' to check for vulnerabilities. The scanner will analyze your code and provide:</p>
+                            <ul>
+                                <li>Detailed vulnerability report</li>
+                                <li>Secure code recommendations</li>
+                                <li>Fix suggestions with explanations</li>
+                            </ul>
+                            <p><a href="/live-checker.html" style="color: var(--accent-green); font-weight: bold;"><i class="fa-solid fa-code"></i> Try our Live Checker</a> Get real-time vulnerability feedback as you type code.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <textarea id="message-input" placeholder="Paste your code here or type a message..."></textarea>
+                    <div class="input-actions">
+                        <span class="info-text"><i class="fa-solid fa-info-circle"></i> Paste your code above and click the button to scan for vulnerabilities</span>
+                        <button id="send-button" class="action-button">
+                            <i class="fa-solid fa-magnifying-glass"></i> Scan Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="tabs-container">
+                <div class="tab-buttons">
+                    <button id="vulnerabilities-tab" class="tab-button active">
+                        <i class="fa-solid fa-bug"></i> Vulnerability Report
+                    </button>
+                    <button id="secure-code-tab" class="tab-button">
+                        <i class="fa-solid fa-code"></i> Secure Code
+                    </button>
+                    <button id="chat-results-tab" class="tab-button">
+                        <i class="fa-solid fa-robot"></i> AI Chat Results
+                    </button>
+                </div>
+                
+                <div class="tab-content">
+                    <!-- Vulnerability Report Tab -->
+                    <div id="vulnerabilities-panel" class="tab-panel active">
+                        <div class="report-container" id="vulnerability-report">
+                            <div class="empty-state animate__animated animate__fadeIn">
+                                <i class="fa-solid fa-shield-halved animate__animated animate__pulse animate__infinite"></i>
+                                <h3>No vulnerabilities scanned yet</h3>
+                                <p>Paste your code and click "Scan Code" to analyze for security vulnerabilities</p>
+                                <div class="action-card">
+                                    <i class="fa-solid fa-code"></i>
+                                    <p>Or <a href="/live-checker.html" style="color: var(--accent-green);">try our Live Checker</a> for real-time vulnerability detection</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Secure Code Tab -->
+                    <div id="secure-code-panel" class="tab-panel">
+                        <pre><code class="language-python" id="secure-code-content"></code></pre>
+                    </div>
+                    
+                    <!-- AI Chat Results Tab -->
+                    <div id="chat-results-panel" class="tab-panel">
+                        <div class="chat-result" id="chat-result-content"></div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="save-report-btn" class="action-button purple">
+                        <i class="fa-solid fa-download"></i> Save Vulnerability Report
+                    </button>
+                    <button id="save-code-btn" class="action-button blue">
+                        <i class="fa-solid fa-download"></i> Save Secure Code
+                    </button>
+                    <button id="save-chat-btn" class="action-button green">
+                        <i class="fa-solid fa-download"></i> Save Chat Response
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification container for alerts and feedback -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Script for particles.js animation -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html> 

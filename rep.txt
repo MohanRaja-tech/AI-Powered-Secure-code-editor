@@ -1,0 +1,738 @@
+
+C:\Users\Naveenkumar\Documents\Personal\Projects\Dev forge Hackathon IT dept\Secure Code AI\checkvul1.py:
+# Security Analysis Report
+
+Total vulnerabilities detected: 3
+
+## Potential Vulnerability (3)
+
+- Line 4: `def insecure_command(user_input):...`
+  - Confidence: 0.62
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 4: `def insecure_file_read(filename):...`
+  - Confidence: 0.77
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 4: `def main():...`
+  - Confidence: 0.71
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+
+C:\Users\Naveenkumar\Documents\Personal\Projects\Dev forge Hackathon IT dept\Secure Code AI\check_model.py:
+# Security Analysis Report
+
+Total vulnerabilities detected: 31
+
+## Sql Injection (2)
+
+- Line 163: `cursor.execute("SELECT * FROM users WHERE id = " + user_id)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use parameterized queries with placeholders instead of string concatenation
+    - Example: cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+    - Consider using an ORM like SQLAlchemy to help prevent SQL injection
+
+- Line 163: `cursor.execute("SELECT * FROM users WHERE id = " + user_id)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use parameterized queries with placeholders instead of string concatenation
+    - Example: cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+    - Consider using an ORM like SQLAlchemy to help prevent SQL injection
+
+## Path Traversal (3)
+
+- Line 181: `with open(user_input + ".txt", "r") as f:`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Validate and sanitize file paths
+    - Use os.path.abspath() and os.path.normpath() to resolve paths
+    - Consider using path libraries like pathlib that handle path manipulation securely
+
+- Line 828: `report += "    with open(user_input + \".txt\", \"r\") as f:\n\n"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Validate and sanitize file paths
+    - Use os.path.abspath() and os.path.normpath() to resolve paths
+    - Consider using path libraries like pathlib that handle path manipulation securely
+
+- Line 1644: `with open(user_input + ".txt", "r") as f:`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Validate and sanitize file paths
+    - Use os.path.abspath() and os.path.normpath() to resolve paths
+    - Consider using path libraries like pathlib that handle path manipulation securely
+
+## Command Injection (3)
+
+- Line 174: `os.system("cat /var/log/app.log | grep " + date)""",`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid passing user input directly to shell commands
+    - Use subprocess with shell=False and a list of arguments
+    - Example: subprocess.run(['ls', directory], shell=False)
+
+- Line 816: `report += "    os.system(\"cat /var/log/app.log | grep \" + date)\n\n"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid passing user input directly to shell commands
+    - Use subprocess with shell=False and a list of arguments
+    - Example: subprocess.run(['ls', directory], shell=False)
+
+- Line 1635: `os.system("cat /var/log/app.log | grep " + date)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid passing user input directly to shell commands
+    - Use subprocess with shell=False and a list of arguments
+    - Example: subprocess.run(['ls', directory], shell=False)
+
+## Insecure Deserialization (2)
+
+- Line 860: `report += "    return pickle.loads(data)\n\n"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid deserializing untrusted data
+    - Use safer alternatives like JSON for data serialization
+    - If using YAML, use yaml.safe_load() instead of yaml.load()
+
+- Line 1656: `return pickle.loads(data)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid deserializing untrusted data
+    - Use safer alternatives like JSON for data serialization
+    - If using YAML, use yaml.safe_load() instead of yaml.load()
+
+## Weak Cryptography (4)
+
+- Line 889: `report += "    return hashlib.md5(password.encode()).hexdigest()\n\n"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use strong hashing algorithms like SHA-256 or SHA-3
+    - For passwords, use specialized algorithms like bcrypt or Argon2
+    - Use cryptographically secure random number generators from secrets module
+
+- Line 1661: `return hashlib.md5(password.encode()).hexdigest()`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use strong hashing algorithms like SHA-256 or SHA-3
+    - For passwords, use specialized algorithms like bcrypt or Argon2
+    - Use cryptographically secure random number generators from secrets module
+
+- Line 889: `report += "    return hashlib.md5(password.encode()).hexdigest()\n\n"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use strong hashing algorithms like SHA-256 or SHA-3
+    - For passwords, use specialized algorithms like bcrypt or Argon2
+    - Use cryptographically secure random number generators from secrets module
+
+- Line 1661: `return hashlib.md5(password.encode()).hexdigest()`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use strong hashing algorithms like SHA-256 or SHA-3
+    - For passwords, use specialized algorithms like bcrypt or Argon2
+    - Use cryptographically secure random number generators from secrets module
+
+## Hard Coded Credentials (7)
+
+- Line 186: `password = "admin123"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 803: `report += "    query = \"SELECT * FROM users WHERE username = '\" + username + \"' AND password = '\" + password + \"'\"\n"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 1386: `if ('api_key =' in line or 'password =' in line) and '"' in line:`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 1650: `password = "admin123"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 185: `api_key = "12345secret_key_here"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 1386: `if ('api_key =' in line or 'password =' in line) and '"' in line:`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 1649: `api_key = "12345secret_key_here"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+## Potential Vulnerability (10)
+
+- Line 14: `def scan_file(scanner: VulnerabilityScanner, file_path: str) -> List[Dict[str, Any]]:...`
+  - Confidence: 0.71
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def _load_model(self, model_path: str) -> None:...`
+  - Confidence: 0.64
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def save_model(self, model_path: str) -> None:...`
+  - Confidence: 0.64
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def train(self, code_samples: List[str], labels: List[int]) -> None:...`
+  - Confidence: 0.65
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def _get_context(self, lines: List[str], index: int, context_size: int = 3) -> str:...`
+  - Confidence: 0.68
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def _find_block_start_line(self, block: str, lines: List[str]) -> int:...`
+  - Confidence: 0.72
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def _determine_vulnerability_type(self, code_block: str) -> str:...`
+  - Confidence: 0.72
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def suggest_fixes(self, vulnerability: Dict[str, Any]) -> List[str]:...`
+  - Confidence: 0.72
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def _fix_deserialize_example(self, lines):...`
+  - Confidence: 0.66
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def _fix_hash_password_example(self, lines):...`
+  - Confidence: 0.63
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+
+C:\Users\Naveenkumar\Documents\Personal\Projects\Dev forge Hackathon IT dept\Secure Code AI\check_model2.py:
+# Security Analysis Report
+
+Total vulnerabilities detected: 21
+
+## Sql Injection (2)
+
+- Line 374: `cursor.execute("SELECT * FROM users WHERE id = " + user_id)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use parameterized queries with placeholders instead of string concatenation
+    - Example: cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+    - Consider using an ORM like SQLAlchemy to help prevent SQL injection
+
+- Line 374: `cursor.execute("SELECT * FROM users WHERE id = " + user_id)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use parameterized queries with placeholders instead of string concatenation
+    - Example: cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+    - Consider using an ORM like SQLAlchemy to help prevent SQL injection
+
+## Path Traversal (2)
+
+- Line 392: `with open(user_input + ".txt", "r") as f:`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Validate and sanitize file paths
+    - Use os.path.abspath() and os.path.normpath() to resolve paths
+    - Consider using path libraries like pathlib that handle path manipulation securely
+
+- Line 1090: `with open(user_input + ".txt", "r") as f:`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Validate and sanitize file paths
+    - Use os.path.abspath() and os.path.normpath() to resolve paths
+    - Consider using path libraries like pathlib that handle path manipulation securely
+
+## Command Injection (2)
+
+- Line 385: `os.system("cat /var/log/app.log | grep " + date)""",`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid passing user input directly to shell commands
+    - Use subprocess with shell=False and a list of arguments
+    - Example: subprocess.run(['ls', directory], shell=False)
+
+- Line 1081: `os.system("cat /var/log/app.log | grep " + date)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid passing user input directly to shell commands
+    - Use subprocess with shell=False and a list of arguments
+    - Example: subprocess.run(['ls', directory], shell=False)
+
+## Insecure Deserialization (1)
+
+- Line 1102: `return pickle.loads(data)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid deserializing untrusted data
+    - Use safer alternatives like JSON for data serialization
+    - If using YAML, use yaml.safe_load() instead of yaml.load()
+
+## Weak Cryptography (2)
+
+- Line 1107: `return hashlib.md5(password.encode()).hexdigest()`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use strong hashing algorithms like SHA-256 or SHA-3
+    - For passwords, use specialized algorithms like bcrypt or Argon2
+    - Use cryptographically secure random number generators from secrets module
+
+- Line 1107: `return hashlib.md5(password.encode()).hexdigest()`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use strong hashing algorithms like SHA-256 or SHA-3
+    - For passwords, use specialized algorithms like bcrypt or Argon2
+    - Use cryptographically secure random number generators from secrets module
+
+## Hard Coded Credentials (4)
+
+- Line 397: `password = "admin123"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 1096: `password = "admin123"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 396: `api_key = "12345secret_key_here"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 1095: `api_key = "12345secret_key_here"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+## Potential Vulnerability (8)
+
+- Line 14: `def scan_file(scanner: VulnerabilityScanner, file_path: str) -> List[Dict[str, Any]]:...`
+  - Confidence: 0.71
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def clear_reports(self) -> None:...`
+  - Confidence: 0.62
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def _load_model(self, model_path: str) -> None:...`
+  - Confidence: 0.64
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def save_model(self, model_path: str) -> None:...`
+  - Confidence: 0.64
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def train(self, code_samples: List[str], labels: List[int]) -> None:...`
+  - Confidence: 0.65
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def _get_context(self, lines: List[str], index: int, context_size: int = 3) -> str:...`
+  - Confidence: 0.68
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def _find_block_start_line(self, block: str, lines: List[str]) -> int:...`
+  - Confidence: 0.72
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 14: `def suggest_fixes(self, vulnerability: Dict[str, Any]) -> List[str]:...`
+  - Confidence: 0.72
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+
+C:\Users\Naveenkumar\Documents\Personal\Projects\Dev forge Hackathon IT dept\Secure Code AI\Main.py:
+# Security Analysis Report
+
+Total vulnerabilities detected: 13
+
+## Sql Injection (2)
+
+- Line 151: `cursor.execute("SELECT * FROM users WHERE id = " + user_id)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use parameterized queries with placeholders instead of string concatenation
+    - Example: cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+    - Consider using an ORM like SQLAlchemy to help prevent SQL injection
+
+- Line 151: `cursor.execute("SELECT * FROM users WHERE id = " + user_id)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use parameterized queries with placeholders instead of string concatenation
+    - Example: cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+    - Consider using an ORM like SQLAlchemy to help prevent SQL injection
+
+## Path Traversal (1)
+
+- Line 169: `with open(user_input + ".txt", "r") as f:`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Validate and sanitize file paths
+    - Use os.path.abspath() and os.path.normpath() to resolve paths
+    - Consider using path libraries like pathlib that handle path manipulation securely
+
+## Command Injection (1)
+
+- Line 162: `os.system("cat /var/log/app.log | grep " + date)""",`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid passing user input directly to shell commands
+    - Use subprocess with shell=False and a list of arguments
+    - Example: subprocess.run(['ls', directory], shell=False)
+
+## Hard Coded Credentials (2)
+
+- Line 174: `password = "admin123"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 173: `api_key = "12345secret_key_here"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+## Potential Vulnerability (7)
+
+- Line 13: `def scan_file(scanner: VulnerabilityScanner, file_path: str) -> List[Dict[str, Any]]:...`
+  - Confidence: 0.75
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 13: `def _load_model(self, model_path: str) -> None:...`
+  - Confidence: 0.64
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 13: `def save_model(self, model_path: str) -> None:...`
+  - Confidence: 0.64
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 13: `def train(self, code_samples: List[str], labels: List[int]) -> None:...`
+  - Confidence: 0.65
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 13: `def _determine_vulnerability_type(self, code_block: str) -> str:...`
+  - Confidence: 0.72
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 13: `def suggest_fixes(self, vulnerability: Dict[str, Any]) -> List[str]:...`
+  - Confidence: 0.72
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 13: `def generate_report(self, vulnerabilities: List[Dict[str, Any]]) -> str:...`
+  - Confidence: 0.67
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+
+C:\Users\Naveenkumar\Documents\Personal\Projects\Dev forge Hackathon IT dept\Secure Code AI\secure_code_examples.py:
+# Security Analysis Report
+
+Total vulnerabilities detected: 5
+
+## Potential Vulnerability (5)
+
+- Line 2: `def get_db_connection(db_path: str):...`
+  - Confidence: 0.62
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 2: `def secure_update(user_id: int, data: dict) -> None:...`
+  - Confidence: 0.63
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 2: `def secure_password_hash(password: str) -> str:...`
+  - Confidence: 0.69
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 2: `def generate_secure_token(length: int = 32) -> str:...`
+  - Confidence: 0.72
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 2: `def main() -> None:...`
+  - Confidence: 0.69
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+
+C:\Users\Naveenkumar\Documents\Personal\Projects\Dev forge Hackathon IT dept\Secure Code AI\security_scanner_gui.py:
+# Security Analysis Report
+
+Total vulnerabilities detected: 16
+
+## Path Traversal (1)
+
+- Line 561: `with open(user_input + ".txt", "r") as f:`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Validate and sanitize file paths
+    - Use os.path.abspath() and os.path.normpath() to resolve paths
+    - Consider using path libraries like pathlib that handle path manipulation securely
+
+## Command Injection (1)
+
+- Line 552: `os.system("cat /var/log/app.log | grep " + date)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid passing user input directly to shell commands
+    - Use subprocess with shell=False and a list of arguments
+    - Example: subprocess.run(['ls', directory], shell=False)
+
+## Insecure Deserialization (1)
+
+- Line 572: `return pickle.loads(data)`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Avoid deserializing untrusted data
+    - Use safer alternatives like JSON for data serialization
+    - If using YAML, use yaml.safe_load() instead of yaml.load()
+
+## Weak Cryptography (2)
+
+- Line 577: `return hashlib.md5(password.encode()).hexdigest()`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use strong hashing algorithms like SHA-256 or SHA-3
+    - For passwords, use specialized algorithms like bcrypt or Argon2
+    - Use cryptographically secure random number generators from secrets module
+
+- Line 577: `return hashlib.md5(password.encode()).hexdigest()`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Use strong hashing algorithms like SHA-256 or SHA-3
+    - For passwords, use specialized algorithms like bcrypt or Argon2
+    - Use cryptographically secure random number generators from secrets module
+
+## Hard Coded Credentials (2)
+
+- Line 567: `password = "admin123"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+- Line 566: `api_key = "12345secret_key_here"`
+  - Confidence: High
+  - Detection Method: pattern
+  - Suggested fixes:
+    - Store credentials in environment variables
+    - Use a secure secrets management system
+    - Consider using tools like AWS Secrets Manager or HashiCorp Vault
+
+## Potential Vulnerability (9)
+
+- Line 11: `def __init__(self, parent=None):...`
+  - Confidence: 0.62
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 11: `def highlightBlock(self, text):...`
+  - Confidence: 0.65
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 11: `def __init__(self, text, color="#4CAF50", parent=None):...`
+  - Confidence: 0.64
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 11: `def __init__(self, text, color="#4CAF50", parent=None):...`
+  - Confidence: 0.65
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 11: `def __init__(self):...`
+  - Confidence: 0.65
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 11: `def apply_dark_theme(self):...`
+  - Confidence: 0.65
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 11: `def switch_tab(self, tab_index):...`
+  - Confidence: 0.62
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 11: `def add_user_message(self, message):...`
+  - Confidence: 0.67
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 11: `def add_bot_message(self, message):...`
+  - Confidence: 0.67
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+
+C:\Users\Naveenkumar\Documents\Personal\Projects\Dev forge Hackathon IT dept\Secure Code AI\vulnerability_report.py:
+# Security Analysis Report
+
+Total vulnerabilities detected: 2
+
+## Potential Vulnerability (2)
+
+- Line 3: `def generate_detailed_report(vulnerabilities: Dict[str, List[Dict[str, Any]]]) -> str:...`
+  - Confidence: 0.68
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+
+- Line 3: `def save_report(report: str, output_path: str) -> None:...`
+  - Confidence: 0.68
+  - Detection Method: ml
+  - Suggested fixes:
+    - Review this code block for potential security issues
+

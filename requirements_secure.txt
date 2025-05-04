@@ -1,0 +1,33 @@
+# Core packages
+flask==2.2.3
+flask-cors==3.0.10
+scikit-learn==1.2.2
+numpy==1.24.2
+pandas==2.0.0
+
+# API integrations
+groq==0.4.0      # For GROQ AI chat integration
+openai==1.6.1    # For Live Checker AI suggestions
+
+# Utilities
+python-dotenv==1.0.0
+requests==2.28.2
+tqdm==4.65.0
+regex==2023.3.23
+
+# Additional packages
+werkzeug>=2.0.1
+anthropic>=0.6.0
+pygments>=2.10.0
+dotnet-script>=1.0.0
+
+# Security packages
+cryptography>=40.0.2     # For encryption and security functions
+pyOpenSSL>=23.2.0        # For SSL/TLS support
+flask-talisman>=1.0.0    # For security headers
+flask-wtf>=1.1.1         # For CSRF protection
+flask-limiter>=3.3.1     # For rate limiting
+pyotp>=2.8.0             # For 2FA support
+bcrypt>=4.0.1            # For password hashing
+passlib>=1.7.4           # For password hashing
+pyjwt>=2.6.0             # For secure token management 
